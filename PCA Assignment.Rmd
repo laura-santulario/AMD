@@ -1,6 +1,6 @@
 ---
 title: 'Exercise set #2. MVA: Principal Component Analysis'
-author: "Eudald Romo Grau y Laura Santulario Verdú"
+author: "Eudald Romo Grau and Laura Santulario VerdÃº"
 output: pdf_document
 ---
 
@@ -74,7 +74,7 @@ corr.matrix
 ```
 
 
-From the matrix above it is observed that all the correlations are positive and the pair of variables more correlated is Elbow - Wrist.  
+From the matrix above it is observed that all the correlations are positive and the pair of variables more correlated is __Elbow - Wrist__  
 
 __2.__ We do a PCA, using the covariance matrix. Compute a table with the decomposition of the variance obtained in PCA, reporting variances of components, percentages of explained variance, and cumulative percentages of explained variance. You can make use of R's function __princomp__ for this purpose. How many
 components do you think you need to adequately describe this data set? Make a scree-plot of the eigenvalues to help you making your decision. Include all results and answers in your report.  
@@ -91,49 +91,65 @@ comp.var <- eigen(cov.matrix, symmetric = TRUE, only.values = FALSE)$values
 perc.var <- (comp.var/sum(comp.var))*100
 cum.var <- (cumsum(comp.var)/sum(comp.var))*100
 tabla.exp.var <- rbind(comp.var, perc.var, cum.var)
+library(knitr)
+kable(tabla.exp.var, format = "markdown", digits = 2,
+      col.names = c("PC1", "PC2", "PC3", "PC4", "PC5", "PC6", "PC7", "PC8", "PC9"),
+      caption = paste("Variance decomposition among variables from ",
+                      "\n PCA based in covariance matrix"))
+```
 
-# Regarding percentage criteria (Pm > 80%) the number of principal components needed will be 3
+Regarding __percentage criteria__ the number of principal components that explain high percetage of total variability of the variables are 3, *cum.var > 80%*. In our case 80.05%.    
 
-# Regarding Kaiser criteria the number of principal components needed will be 5
+Regarding __Kaiser criteria__, we will get the number of components that their variance is higher than the mean of the total variance, $\bar{\lambda}$. In this case it will be considered 3 components, cause the average of the total variance of the data is `r round(mean(comp.var), 2)` and the first three components represents higher variance by their own.  
 
 
+#Screenplot  
+
+The variance of all the components are represented in the following plot:  
+
+
+```{r echo = FALSE, memessage = FALSE, warning = FALSE}
 #Screenplot
 plot(comp.var, type = "b", xlab = "", ylab = "Component's Variance",
      main = paste("Representation of the Variance of all", "\nPrincipal Components"))
-# Nos quedamos con dos componentes porque después de la segunda la variabilidad que se puede obtener de más no es muy significativa.  
 ```
 
+As it can be seen from the previous graph the two first components represents many variability of the data, so we decide to take only two components because the variability that can be represented with more components is not that different, so it will be better and easier working with only two variables than more variables if the variability that they can explain is not that much.    
 
 __3.__ Make a PCA biplot of the previous analysis. You can make use of R's function __biplot__. However, it is usually possible to make nicer plots using the functions __plot__, __points__ and __arrows__. Take care to plot components that have not been standardized. Can you give an interpretation of the first and the second principal component?  
 
 ```{r echo = FALSE, memessage = FALSE, warning = FALSE}
-PCA.stand <- scale(PCA, center = TRUE, scale = TRUE)
-head(PCA.stand, 5)
-
-
 plot(PCA[ , 1], PCA[ , 2], xlab = "PC 1", ylab = "PC 2", 
      asp = 1, ylim = c(-7,7), main = "Biplot with covariance matrix")
 abline(h = 0)
 abline(v = 0)
-text(PCA[ , 1], PCA[ , 2], 1:nrow(centered.datos), pos = 1)
+# text(PCA[ , 1], PCA[ , 2], 1:nrow(centered.datos), pos = 1)
 arrows(0,0, 10*eigenvectors[,1], 10*eigenvectors[,2] , col = "blue")
-
-# PC 1: The variables which has more wheited are 
-# PC 2: The variables which has more wheited are Biacr, Biili, Bitro and ChestDia
-
-
 ```
+
+The biplot above represents the data taking account the two first components. In this case each one represents:  
+
++ __PC 1__: The variables which have more wheigt are __Elbow__, __Wirst__, __Knee__ and __Ankle__. So this component plays the role of representing the shape of body's extremities.  
+
++ __PC 2__: The variables which have more wheigt are __Biacr__, __Biili__, __Bitro__ and __ChestDia__. So it seems reasonable to say that the second component is talking about the shape of the body.  
+
 
 __4.__  Extract the principal components computed by __princomp__ function by accessing the __scores__ object in the list object produced by __princomp__. Compute the correlations between the extracted principal components. Comment on your results.  
 
-```{r echo = FALSE, memessage = FALSE, warning = FALSE}
+## PCA by __princomp__ command  
 
+```{r echo = FALSE, memessage = FALSE, warning = FALSE}
 PCA.princomp <- princomp(datos[ , 1:9])$scores
 head(PCA.princomp, 5)
+```
+
+## Correlation among the components  
+
+```{r echo = FALSE, memessage = FALSE, warning = FALSE}
 round(cor(PCA.princomp), 2)
 ```
 
-All principal components are uncorrelated  
+All principal components are uncorrelated, as we were expecting.    
 
 
 __5.__  We now focus on the correlation structure of the variables, and do a second
@@ -153,29 +169,36 @@ cor.comp.var <- eigen(cor.matrix, symmetric = TRUE, only.values = FALSE)$values
 cor.perc.var <- (cor.comp.var/sum(cor.comp.var))*100
 cor.cum.var <- (cumsum(cor.comp.var)/sum(cor.comp.var))*100
 cor.tabla.exp.var <- rbind(cor.comp.var, cor.perc.var, cor.cum.var)
-
-#Screenplot
-plot(cor.comp.var, type = "b", xlab = "", ylab = "Component's Variance",
-     main = paste("Representation of the Variance of all", "\nPrincipal Components"))
-
+kable(cor.tabla.exp.var, format = "markdown", digits = 2,
+      col.names = c("PC1", "PC2", "PC3", "PC4", "PC5", "PC6", "PC7", "PC8", "PC9"),
+      caption = paste("Variance decomposition among variables from ",
+                      "\n PCA based in correlation matrix"))
 ```
 
-Two principal components represents only the 63.9% of the variability of the data.  
+Two principal components represents only the 63.9% of the variability of the data, what it is considered not enough for representeng all the women. In this case, it should be better to take into account the first 4 components, which represents 80.83% of the variability.  
 
-__6.__  Make a second biplot based on your last PCA and, use the standardized principal components in this plot. Add a unit circle to the biplot (you can use function draw.circle from package __plotrix__). Which variable has the poorest goodness-offit in this plot?  
+__6.__  Make a second biplot based on your last PCA and use the standardized principal components in this plot. Add a unit circle to the biplot (you can use function __draw.circle__ from package __plotrix__). Which variable has the poorest goodness-offit in this plot?  
 
 ```{r echo = FALSE, message = FALSE, warning = FALSE}
 library(plotrix)
-plot(cor.PCA[ , 1], cor.PCA[ , 2], xlab = "PC 1", ylab = "PC 2", 
+cor.PCA.stand <- scale(cor.PCA, center = TRUE, scale = TRUE)
+par(las = 2)
+plot(cor.PCA.stand[ , 1], cor.PCA.stand[ , 2], xlab = "PC 1", ylab = "PC 2", 
      asp = 1,  main = "Biplot with correlation matrix")
 abline(h = 0)
 abline(v = 0)
-text(PCA[ , 1], PCA[ , 2], 1:nrow(centered.datos), pos = 1)
-arrows(0,0, cor.eigenvectors[,1], cor.eigenvectors[,2] , col = "blue")
-draw.circle(cor.eigenvectors[,1], cor.eigenvectors[,2], 
-            border = "blue")
+# text(cor.PCA.stand[ , 1], cor.PCA.stand[ , 2], 1:nrow(centered.datos), pos = 1)
+arrows(0,0, 2*cor.eigenvectors[,1], 2*cor.eigenvectors[,2] , col = "blue")
+draw.circle(0, 0,
+            border = "blue", radius = 1)
+
 ```
 
+The previous biplot represents the data taking into account the two first principal components computed by the correlation matrix. In this case the components represents:  
+
++ __PC 1__: The variables which have more wheigt are __Elbow__, __Wirst__, __Knee__ . As in the previous case, this component plays the role of representing the shape of body's extremities.  
+
++ __PC 2__: The variables which have more wheigt are __Biacr__, __Biili__, and __ChestDia__. The second component, as in the result obtained by the covariance matrix, is talking about the shape of the body.
 
 
 __7.__  Compute the correlation matrix between the original variables and the first two principal components obtained by __princomp__. Which variables correlate highly with which components?  
@@ -186,14 +209,46 @@ colnames(A) <- c("PC1", "PC2")
 A
 ```
 
-Biili, Bitro, Knee with PC1
-ChestDia with PC2
+The variables which have negative higher correlation with the two principal components are:  
+
++ __PC 1__: All variables, especially __Bitro__, __Biili__ and __Knee__     
+
++ __PC 2__: __ChestDia__ and __Biili__    
+
 
 
 __8.__  Calculate the goodness-of-fit of the correlation matrix as it has been represented in the last biplot.  
 
+```{r echo = FALSE, message = FALSE, warning = FALSE}
+
+```
+
 
 __9.__  Study the relationships between the Age, Weight and Height, and the first two principal components by calculating correlations and making some plots. Do these variables help for interpreting the principal components?  
+
+## Correlation  
+
+```{r echo = FALSE, message = FALSE, warning = FALSE}
+correlation <- cor(datos[, 10:12], cor.PCA[, 1:2])
+colnames(correlation) <- c("PC 1", "PC 2")
+correlation
+```
+
+The variable with higher relation with the first principal component is __Weight__. It has negative correlation, what means the higher the weight of a woman the less the value of PC1. It can be said that __Height__ also affects negatively to PC1, but to a lesser extent.     
+
+Given the second component, PC2, the variable with higher negative relation is __Weight__ too.  
+
+In the next plot it can be observed the relation of the new variables and the two principal components  
+
+```{r echo = FALSE, message = FALSE, warning = FALSE, fig.width = 12, fig.height = 8}
+par(mfrow = c(3, 2), font.lab = 2)
+plot(datos[, 10], cor.PCA[, 1], xlab = "Age", ylab = "PC 1", asp = 1, main = "Age vs PC1")
+plot(datos[, 10], cor.PCA[, 2], xlab = "Age", ylab = "PC 2", asp = 1, main = "Age vs PC2")
+plot(datos[, 11], cor.PCA[, 1], xlab = "Weight", ylab = "PC 1", asp = 1, main = "Weight vs PC1")
+plot(datos[, 11], cor.PCA[, 2], xlab = "Weight", ylab = "PC 2", asp = 1, main = "Weight vs PC2")
+plot(datos[, 12], cor.PCA[, 1], xlab = "Height", ylab = "PC 1", asp = 1, main = "Height vs PC1")
+plot(datos[, 12], cor.PCA[, 2], xlab = "Height", ylab = "PC 2", asp = 1, main = "Height vs PC2")
+```
 
 
 
